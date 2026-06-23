@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zarejestruj się</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white font-sans min-h-screen flex items-center justify-center p-6 relative overflow-x-hidden">
+
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 border border-yellow-500 text-white font-medium px-6 py-4 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none z-50 flex items-center gap-3">
+        <span class="text-yellow-500 text-xl">✨</span>
+        <span id="toastMessage">Komunikat</span>
+    </div>
+
+    <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl z-10">
+        <h2 class="text-3xl font-black text-center text-yellow-500 mb-6 uppercase tracking-wide">REJESTRACJA</h2>
+        
+        <form id="registerForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-400 mb-1">Nick z Robloxa</label>
+                <input type="text" id="robloxNick" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-400 mb-1">Hasło</label>
+                <input type="password" id="password" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-500">
+            </div>
+            <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold py-3 rounded-xl transition-colors mt-6 uppercase tracking-wider text-sm">
+                Założ konto
+            </button>
+        </form>
+        
+        <p class="text-center text-sm text-slate-400 mt-4">Masz już konto? <a href="logowanie.html" class="text-yellow-500 font-semibold hover:underline">Zaloguj się</a></p>
+    </div>
+
+    <script>
+        function showToast(message, callback) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+                if(callback) setTimeout(callback, 300);
+            }, 3000);
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nick = document.getElementById('robloxNick').value.trim();
+            const pass = document.getElementById('password').value;
+
+            if (nick.toLowerCase() === 'admin') {
+                alert('Ten login jest zarezerwowany!');
+                return;
+            }
+
+            let usersList = JSON.parse(localStorage.getItem('registered_users')) || [];
+            const userExists = usersList.some(user => user.username.toLowerCase() === nick.toLowerCase());
+            
+            if (userExists) {
+                alert('Użytkownik o takim nicku już istnieje!');
+                return;
+            }
+
+            usersList.push({
+                username: nick,
+                password: pass,
+                regDate: new Date().toLocaleDateString('pl-PL')
+            });
+
+            localStorage.setItem('registered_users', JSON.stringify(usersList));
+            localStorage.setItem('user_nick', nick);
+            localStorage.setItem('user_pass', pass);
+
+            showToast('Konto założone! Za chwilę nastąpi przekierowanie...', function() {
+                window.location.href = 'logowanie.html';
+            });
+        });
+    </script>
+</body>
+</html>
