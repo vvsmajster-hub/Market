@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twoje Konwersacje</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white font-sans p-6 min-h-screen">
+
+    <div class="max-w-3xl mx-auto">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-6 mb-8">
+            <div>
+                <h1 class="text-3xl font-black text-purple-500 uppercase tracking-wider">Twoje Wiadomości</h1>
+                <p class="text-sm text-slate-400">Przeglądaj aktywne czaty handlowe</p>
+            </div>
+            <a href="index.html" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg font-bold transition-all text-sm">Powrót do sklepu</a>
+        </div>
+
+        <div id="chatsContainer" class="space-y-4">
+            </div>
+    </div>
+
+    <script>
+        const currentUser = localStorage.getItem('user_nick');
+        if (!currentUser) {
+            alert('Musisz być zalogowany!');
+            window.location.href = 'logowanie.html';
+        }
+
+        const chatsContainer = document.getElementById('chatsContainer');
+        const allChats = JSON.parse(localStorage.getItem('active_chats_list')) || [];
+
+        // Filtrujemy czaty dla zalogowanego użytkownika lub Admina
+        const myChats = allChats.filter(chat => 
+            chat.buyer === currentUser || chat.seller === currentUser || currentUser === 'Admin'
+        );
+
+        if (myChats.length === 0) {
+            chatsContainer.innerHTML = `
+                <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl text-center text-slate-500 italic">
+                    Nie masz jeszcze żadnych aktywnych rozmów. Kliknij "KUP TERAZ" przy interesującej Cię ofercie, aby zacząć!
+                </div>
+            `;
+        } else {
+            myChats.forEach(chat => {
+                let rolaTag = `<span class="bg-blue-600/30 text-blue-400 border border-blue-700/50 text-[10px] px-2 py-0.5 rounded font-bold">KUPUJĘ</span>`;
+                if (chat.seller === currentUser) {
+                    rolaTag = `<span class="bg-green-600/30 text-green-400 border border-green-700/50 text-[10px] px-2 py-0.5 rounded font-bold">SPRZEDAJĘ</span>`;
+                }
+                if (currentUser === 'Admin') {
+                    rolaTag = `<span class="bg-red-600/30 text-red-400 border border-red-700/50 text-[10px] px-2 py-0.5 rounded font-bold">ADMIN PODGLĄD</span>`;
+                }
+
+                const cardHtml = `
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-purple-500/50 transition-all">
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h3 class="text-base font-bold text-white">${chat.title}</h3>
+                                ${rolaTag}
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1">
+                                Sprzedawca: <span class="text-slate-300 font-medium">${chat.seller}</span> | 
+                                Kupujący: <span class="text-slate-300 font-medium">${chat.buyer}</span>
+                            </p>
+                        </div>
+                        <button onclick="otworzKonkretnyCzat('${chat.key}', '${chat.title}', '${chat.seller}')" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors whitespace-nowrap">
+                            Otwórz czat ➔
+                        </button>
+                    </div>
+                `;
+                chatsContainer.innerHTML += cardHtml;
+            });
+        }
+
+        function otworzKonkretnyCzat(key, title, seller) {
+            localStorage.setItem('chat_item_title', title);
+            localStorage.setItem('chat_item_seller', seller);
+            window.location.href = 'chat.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Szczegóły Oferty - Przedmiot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white font-sans p-6 min-h-screen flex items-center justify-center">
+
+    <div class="max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row gap-6 shadow-2xl relative">
+        <div class="flex-1 bg-slate-950 rounded-xl flex items-center justify-center p-12 border border-slate-800 min-h-[300px]">
+            <span id="dynamicImage" class="text-green-500 font-black text-xl uppercase tracking-widest">[ ZDJĘCIE ]</span>
+        </div>
+
+        <div class="flex-1 flex flex-col justify-between">
+            <div>
+                <span id="dynamicTag" class="text-xs font-bold bg-blue-600 px-2 py-1 rounded uppercase tracking-wider">MURDER MYSTERY 2</span>
+                <h2 id="dynamicTitle" class="text-2xl font-black mt-2 tracking-wide">Chroma Deathshard (Nóż)</h2>
+                <p class="text-sm text-slate-400 mt-1">Sprzedawca: <span id="dynamicSeller" class="text-slate-200 font-semibold">ProGamerRoblox123</span></p>
+                
+                <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl mt-4 text-sm text-slate-300">
+                    <p id="dynamicDesc">Przekazuję przedmiot natychmiast po zaksięgowaniu wpłaty. Umawiamy się na serwerze handlowym w grze. 100% bezpiecznie.</p>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-800 flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Cena:</p>
+                    <p id="dynamicPrice" class="text-2xl font-black text-green-400">25.00 PLN</p>
+                </div>
+                <button onclick="otworzCzat()" class="bg-green-600 hover:bg-green-500 text-white font-black px-8 py-4 rounded-xl text-lg shadow-lg transition-all">
+                    KUP TERAZ / CZAT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const wybraneId = localStorage.getItem('wybrane_id');
+        
+        const defaultItems = [
+            { id: 'default1', title: 'Chroma Deathshard', game: 'MM2', price: '25.00', seller: 'ProGamerRoblox123' },
+            { id: 'default2', title: '1000 Robux (Tax Covered)', game: 'Robuxy', price: '35.00', seller: 'RichTrader99' }
+        ];
+        const customItems = JSON.parse(localStorage.getItem('custom_items')) || [];
+        const allItems = [...customItems, ...defaultItems];
+
+        const znalezionyPrzedmiot = allItems.find(item => item.id === wybraneId);
+
+        if (znalezionyPrzedmiot) {
+            document.getElementById('dynamicTitle').innerText = znalezionyPrzedmiot.title;
+            document.getElementById('dynamicSeller').innerText = znalezionyPrzedmiot.seller;
+            document.getElementById('dynamicPrice').innerText = znalezionyPrzedmiot.price + " PLN";
+            document.getElementById('dynamicTag').innerText = znalezionyPrzedmiot.game;
+            document.getElementById('dynamicImage').innerText = `[ ${znalezionyPrzedmiot.title} ]`;
+            
+            if(znalezionyPrzedmiot.game === 'Jailbreak') {
+                document.getElementById('dynamicTag').className = "text-xs font-bold bg-green-600 px-2 py-1 rounded uppercase tracking-wider";
+            } else if(znalezionyPrzedmiot.game === 'Brainrot') {
+                document.getElementById('dynamicTag').className = "text-xs font-bold bg-orange-600 px-2 py-1 rounded uppercase tracking-wider";
+            }
+
+            if(wybraneId !== 'default1') {
+                document.getElementById('dynamicDesc').innerText = `Przedmiot: ${znalezionyPrzedmiot.title} w grze ${znalezionyPrzedmiot.game}. Sprzedawca zobowiązany jest przekazać go w grze po opłaceniu zamówienia przez kupującego.`;
+            }
+        }
+
+        // FUNKCJA URUCHAMIAJĄCA CZAT
+        function otworzCzat() {
+            if (localStorage.getItem('isLoggedIn') !== 'true') {
+                alert('Musisz się zalogować, aby kupić przedmiot!');
+                window.location.href = 'logowanie.html';
+                return;
+            }
+            
+            const tytul = znalezionyPrzedmiot ? znalezionyPrzedmiot.title : 'Chroma Deathshard';
+            const sprzedawca = znalezionyPrzedmiot ? znalezionyPrzedmiot.seller : 'ProGamerRoblox123';
+            
+            localStorage.setItem('chat_item_title', tytul);
+            localStorage.setItem('chat_item_seller', sprzedawca);
+            window.location.href = 'chat.html';
+        }
+    </script>
+</body>
+</html>

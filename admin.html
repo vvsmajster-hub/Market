@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administratora</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white font-sans p-6 min-h-screen">
+
+    <div class="max-w-4xl mx-auto">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-6 mb-8">
+            <div>
+                <h1 class="text-3xl font-black text-red-500 uppercase tracking-wider">Panel Administratora</h1>
+                <p class="text-sm text-slate-400">Zarządzanie rynkiem i użytkownikami</p>
+            </div>
+            <a href="index.html" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg font-bold transition-all text-sm">Powrót do sklepu</a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                <p class="text-sm text-slate-400 font-semibold uppercase tracking-wider">Zarejestrowani gracze</p>
+                <p id="statUsersCount" class="text-4xl font-black text-blue-500 mt-2">0</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                <p class="text-sm text-slate-400 font-semibold uppercase tracking-wider">Aktywne ogłoszenia</p>
+                <p id="statItemsCount" class="text-4xl font-black text-yellow-500 mt-2">0</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                <p class="text-sm text-slate-400 font-semibold uppercase tracking-wider">Status bazy</p>
+                <p class="text-4xl font-black text-green-400 mt-2">OK</p>
+            </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-8">
+            <h2 class="text-xl font-bold text-white mb-4 uppercase tracking-wide text-red-400">Lista Kont Użytkowników</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-slate-400 text-sm uppercase font-bold">
+                            <th class="py-3 px-4">Nick z Robloxa</th>
+                            <th class="py-3 px-4">Hasło konta</th>
+                            <th class="py-3 px-4">Data rejestracji</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody" class="text-slate-300 divide-y divide-slate-800/50">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <h2 class="text-xl font-bold text-white mb-2">Zarządzanie Systemem</h2>
+            <p class="text-sm text-slate-400 mb-6">Użyj poniższego przycisku, aby wyczyścić całą pamięć (usunie wszystkich zarejestrowanych użytkowników oraz ich ogłoszenia).</p>
+            <button onclick="wyczyscWszystko()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-lg">
+                🚨 Resetuj Całą Bazę Danych
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // BLOKADA: Jeśli zalogowany nie jest Admin, wyrzuć go na stronę główną
+        if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('user_nick') !== 'Admin') {
+            alert('Brak dostępu! Ta sekcja jest przeznaczona wyłącznie dla Administratora.');
+            window.location.href = 'index.html';
+        }
+
+        // 1. LICZNIKI STATYSTYK
+        const customItems = JSON.parse(localStorage.getItem('custom_items')) || [];
+        document.getElementById('statItemsCount').innerText = customItems.length;
+
+        const usersList = JSON.parse(localStorage.getItem('registered_users')) || [];
+        document.getElementById('statUsersCount').innerText = usersList.length;
+
+        // 2. GENEROWANIE WIERSZY TABELI Z LOGINAMI I HASŁAMI
+        const tableBody = document.getElementById('usersTableBody');
+
+        if (usersList.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="py-6 text-center text-slate-500 italic">Brak zarejestrowanych kont w bazie.</td>
+                </tr>
+            `;
+        } else {
+            usersList.forEach(user => {
+                const rowHtml = `
+                    <tr class="hover:bg-slate-950/40 transition-colors">
+                        <td class="py-3 px-4 font-bold text-yellow-500">${user.username}</td>
+                        <td class="py-3 px-4 font-mono text-sm bg-slate-950/20 text-slate-400 select-all">${user.password}</td>
+                        <td class="py-3 px-4 text-sm text-slate-500">${user.regDate || 'Brak danych'}</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += rowHtml;
+            });
+        }
+
+        // 3. CZYSZCZENIE BAZY
+        function wyczyscWszystko() {
+            if (confirm('CZY NA PEWNO? To usunie absolutnie wszystkie konta graczy i ich przedmioty.')) {
+                localStorage.removeItem('custom_items');
+                localStorage.removeItem('registered_users');
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('user_nick');
+                localStorage.removeItem('user_pass');
+                alert('Baza danych została zresetowana!');
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>

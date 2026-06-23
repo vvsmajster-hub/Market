@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Marketplace - Strona Główna</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white font-sans p-6">
+
+    <header class="max-w-6xl mx-auto flex justify-between items-center py-6 border-b border-slate-800">
+        <h1 class="text-2xl font-black text-yellow-500 tracking-wider">ROBLOX-MARKET</h1>
+        <div id="authSection" class="flex gap-4">
+            <a href="logowanie.html" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg font-medium transition-all">Zaloguj się</a>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto mt-12">
+        
+        <div class="mb-8 max-w-md">
+            <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Znajdź coś dla siebie</label>
+            <input type="text" id="searchInput" oninput="filtrujOferty()" placeholder="🔍 Szukaj przedmiotu (np. Chroma)..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-500 text-sm transition-all shadow-lg">
+        </div>
+
+        <h2 class="text-2xl font-bold mb-6">Wybierz grę:</h2>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
+            <button onclick="wybierzKategorie('Wszystkie')" class="game-filter-btn bg-yellow-500 text-slate-950 p-6 rounded-xl font-bold text-lg border border-yellow-500 transition-all shadow-lg shadow-yellow-500/10">Wszystkie</button>
+            <button onclick="wybierzKategorie('MM2')" class="game-filter-btn bg-slate-900 hover:bg-slate-800 p-6 rounded-xl font-bold text-lg border border-slate-800 transition-all">MM2</button>
+            <button onclick="wybierzKategorie('Jailbreak')" class="game-filter-btn bg-slate-900 hover:bg-slate-800 p-6 rounded-xl font-bold text-lg border border-slate-800 transition-all">Jailbreak</button>
+            <button onclick="wybierzKategorie('Brainrot')" class="game-filter-btn bg-slate-900 hover:bg-slate-800 p-6 rounded-xl font-bold text-lg border border-slate-800 transition-all">Brainrot</button>
+            <button onclick="wybierzKategorie('Robuxy')" class="game-filter-btn bg-slate-900 hover:bg-slate-800 p-6 rounded-xl font-bold text-lg border border-slate-800 transition-all">Robuxy</button>
+        </div>
+
+        <h2 class="text-2xl font-bold mb-6">Najnowsze przedmioty:</h2>
+        <div id="itemsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        </div>
+    </main>
+
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 border border-red-500 text-white font-medium px-6 py-4 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none z-50 flex items-center gap-3">
+        <span>👋</span>
+        <span id="toastMessage">Pomyślnie wylogowano!</span>
+    </div>
+
+    <div id="deleteModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 max-w-md w-full rounded-2xl p-6 shadow-2xl transform scale-95 transition-all duration-300" id="modalBox">
+            <div class="text-red-500 text-3xl mb-2">⚠️</div>
+            <h3 class="text-xl font-black text-white uppercase tracking-wide">Potwierdź usunięcie</h3>
+            <p class="text-sm text-slate-400 mt-2">Czy na pewno chcesz usunąć ogłoszenie: <strong id="deleteModalItemTitle" class="text-yellow-500"></strong>?</p>
+            
+            <div class="flex gap-3 mt-6">
+                <button id="confirmDeleteBtn" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl text-sm uppercase transition-colors">
+                    Tak, usuń
+                </button>
+                <button onclick="zamknijModalUsuwania()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-sm uppercase transition-colors">
+                    Anuluj
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_NICK = "Admin";
+        let idDoUsuniecia = null;
+        let aktywnaKategoria = "Wszystkie";
+
+        // 1. ZARZĄDZANIE SESJĄ LOGOWANIA
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const nick = localStorage.getItem('user_nick');
+        const authSection = document.getElementById('authSection');
+
+        if (isLoggedIn === 'true' && nick) {
+            let adminLinkHtml = '';
+            if (nick === ADMIN_NICK) {
+                adminLinkHtml = `<a href="admin.html" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg font-bold transition-all">Panel Admina</a>`;
+            }
+
+            authSection.innerHTML = `
+                <span class="text-slate-400 self-center">Witaj, <strong class="text-yellow-500">${nick}</strong>!</span>
+                ${adminLinkHtml}
+                <a href="czaty.html" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg font-bold transition-all flex items-center gap-2">
+                    💬 <span class="hidden sm:inline">Czaty</span>
+                </a>
+                <a href="dodaj.html" class="bg-yellow-500 hover:bg-yellow-400 text-slate-950 px-4 py-2 rounded-lg font-bold transition-all">Wystaw Przedmiot</a>
+                <button onclick="logout()" class="bg-red-900/50 hover:bg-red-900 text-red-200 px-3 py-1.5 rounded-lg text-sm border border-red-700 transition-all">Wyloguj</button>
+            `;
+
+            localStorage.setItem(`status_${nick}`, 'online');
+        }
+
+        function logout() {
+            if(nick) {
+                localStorage.setItem(`status_${nick}`, 'offline');
+            }
+            localStorage.removeItem('isLoggedIn');
+            const toast = document.getElementById('toast');
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            setTimeout(() => { window.location.reload(); }, 1500);
+        }
+
+        // --- INTEGROWNANIE I INITIALIZACJA BAZY OFERT ---
+        // Jeśli baza w LocalStorage jest całkowicie pusta, konfigurujemy domyślne przedmioty w pamięci jako punkt wyjścia
+        if (!localStorage.getItem('custom_items') && !localStorage.getItem('system_initialized')) {
+            const defaultStartItems = [
+                { id: 'default1', title: 'Chroma Deathshard', game: 'MM2', price: '25.00', seller: 'ProGamerRoblox123', target: 'oferta.html' },
+                { id: 'default2', title: '1000 Robux (Tax Covered)', game: 'Robuxy', price: '35.00', seller: 'RichTrader99', target: 'robux.html' }
+            ];
+            localStorage.setItem('custom_items', JSON.stringify(defaultStartItems));
+            localStorage.setItem('system_initialized', 'true'); // Znacznik, żeby nie nadpisywało bazy przy odświeżaniu strony
+        }
+
+        // Teraz wszystkie oferty (zarówno domyślne jak i dodane przez graczy) znajdują się w tej jednej tablicy:
+        let allItems = JSON.parse(localStorage.getItem('custom_items')) || [];
+        
+        // RENDEROWANIE KART
+        function renderujKarty(listaPrzedmiotów) {
+            const container = document.getElementById('itemsContainer');
+            container.innerHTML = '';
+
+            if(listaPrzedmiotów.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 italic">Brak ofert spełniających kryteria...</div>`;
+                return;
+            }
+
+            listaPrzedmiotów.forEach(item => {
+                let gameColor = 'bg-blue-600';
+                if (item.game === 'Robuxy') gameColor = 'bg-purple-600';
+                if (item.game === 'Jailbreak') gameColor = 'bg-green-600';
+                if (item.game === 'Brainrot') gameColor = 'bg-orange-600';
+
+                let targetPage = item.target || (item.game === 'Robuxy' ? 'robux.html' : 'oferta.html');
+
+                const sellerStatus = localStorage.getItem(`status_${item.seller}`) || 'offline';
+                const statusBadge = sellerStatus === 'online' 
+                    ? `<span class="inline-flex items-center gap-1 text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-1.5 py-0.5 rounded-md font-bold">🟢 ONLINE</span>`
+                    : `<span class="inline-flex items-center gap-1 text-[10px] bg-slate-800 text-slate-400 border border-slate-700 px-1.5 py-0.5 rounded-md font-bold">🔴 OFFLINE</span>`;
+
+                const ocenySystem = JSON.parse(localStorage.getItem(`oceny_${item.seller}`)) || [5, 5, 5];
+                const sredniaOcen = (ocenySystem.reduce((a,b) => a+b, 0) / ocenySystem.length).toFixed(1);
+
+                let deleteButtonHtml = '';
+                // ZMIANA: Admin lub właściciel może usunąć KAŻDY przedmiot z listy, ponieważ domyślne też są w LocalStorage!
+                if (isLoggedIn === 'true' && (item.seller === nick || nick === ADMIN_NICK)) {
+                    deleteButtonHtml = `
+                        <button onclick="otworzModalUsuwania('${item.id}', '${item.title}')" class="bg-red-900/40 hover:bg-red-600 text-red-200 hover:text-white px-3 py-2 rounded-lg text-sm border border-red-700/60 transition-all">
+                            🗑️
+                        </button>
+                    `;
+                }
+
+                const cardHtml = `
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition-all">
+                        <div class="bg-slate-950 rounded-lg p-4 text-center text-slate-600 font-mono text-xs uppercase tracking-wider">
+                            === OBRAZEK ${item.game} ===
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold ${gameColor} px-2 py-1 rounded">${item.game}</span>
+                                ${statusBadge}
+                            </div>
+                            <h3 class="text-lg font-semibold mt-2 truncate">${item.title}</h3>
+                            
+                            <p class="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                                Sprzedawca: <strong class="text-slate-200">${item.seller}</strong> 
+                                <span class="text-yellow-500 font-bold ml-1">⭐ ${sredniaOcen}</span>
+                            </p>
+                            
+                            <p class="text-xl font-extrabold text-green-400 mt-2">${item.price} PLN</p>
+                        </div>
+                        
+                        <div class="flex gap-2 mt-4">
+                            <button onclick="zobaczOferte('${item.id}', '${targetPage}')" class="flex-1 text-center bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold py-2 rounded-lg transition-colors text-sm">
+                                Zobacz ofertę
+                            </button>
+                            ${deleteButtonHtml}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        // LOGIKA WYSZUKIWARKI I FILTRÓW
+        function filtrujOferty() {
+            const fraza = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            const przefiltrowane = allItems.filter(item => {
+                const pasujeKategoria = (aktywnaKategoria === "Wszystkie" || item.game === aktywnaKategoria);
+                const pasujeFraza = item.title.toLowerCase().includes(fraza) || item.seller.toLowerCase().includes(fraza);
+                return pasujeKategoria && pasujeFraza;
+            });
+
+            renderujKarty(przefiltrowane);
+        }
+
+        function wybierzKategorie(kategoria) {
+            aktywnaKategoria = kategoria;
+            
+            document.querySelectorAll('.game-filter-btn').forEach(btn => {
+                if(btn.innerText === kategoria) {
+                    btn.className = "game-filter-btn bg-yellow-500 text-slate-950 p-6 rounded-xl font-bold text-lg border border-yellow-500 transition-all shadow-lg shadow-yellow-500/10";
+                } else {
+                    btn.className = "game-filter-btn bg-slate-900 hover:bg-slate-800 p-6 rounded-xl font-bold text-lg border border-slate-800 transition-all";
+                }
+            });
+
+            filtrujOferty();
+        }
+
+        function zobaczOferte(id, strona) {
+            localStorage.setItem('wybrane_id', id);
+            window.location.href = strona;
+        }
+
+        // MODAL USUWANIA
+        function otworzModalUsuwania(id, nazwa) {
+            idDoUsuniecia = id;
+            document.getElementById('deleteModalItemTitle').innerText = `"${nazwa}"`;
+            const modal = document.getElementById('deleteModal');
+            const box = document.getElementById('modalBox');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            box.classList.remove('scale-95');
+        }
+
+        function zamknijModalUsuwania() {
+            const modal = document.getElementById('deleteModal');
+            const box = document.getElementById('modalBox');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            box.classList.add('scale-95');
+            idDoUsuniecia = null;
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (!idDoUsuniecia) return;
+            
+            // Usunięcie działa teraz dla KAŻDEGO ID bez ograniczeń!
+            let items = JSON.parse(localStorage.getItem('custom_items')) || [];
+            let nowaLista = items.filter(i => i.id !== idDoUsuniecia);
+            
+            localStorage.setItem('custom_items', JSON.stringify(nowaLista));
+            
+            zamknijModalUsuwania();
+            window.location.reload();
+        });
+
+        // PIERWSZE URUCHOMIENIE STRONY
+        renderujKarty(allItems);
+    </script>
+</body>
+</html>

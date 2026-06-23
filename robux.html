@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Szczegóły Oferty - Robuxy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white font-sans p-6 min-h-screen flex items-center justify-center">
+
+    <div class="max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row gap-6 shadow-2xl relative">
+        <div class="flex-1 bg-slate-950 rounded-xl flex items-center justify-center p-12 border border-slate-800 min-h-[300px]">
+            <span id="dynamicImage" class="text-purple-500 font-black text-xl uppercase tracking-widest">[ R$ ]</span>
+        </div>
+
+        <div class="flex-1 flex flex-col justify-between">
+            <div>
+                <span class="text-xs font-bold bg-purple-600 px-2 py-1 rounded uppercase tracking-wider">ROBLOX WALUTA</span>
+                <h2 id="dynamicTitle" class="text-2xl font-black mt-2 tracking-wide">1000 Robux (Tax Covered)</h2>
+                <p class="text-sm text-slate-400 mt-1">Sprzedawca: <span id="dynamicSeller" class="text-slate-200 font-semibold">RichTrader99</span></p>
+                
+                <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl mt-4 text-sm text-slate-300">
+                    <p id="dynamicDesc">Przelewam Robuxy przez system grupowy (Group Funds) lub zakup Gamepassa. Pokrywam 30% podatku Roblox, więc dostajesz dokładnie tyle, ile kupujesz na czysto!</p>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-800 flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Cena:</p>
+                    <p id="dynamicPrice" class="text-2xl font-black text-green-400">35.00 PLN</p>
+                </div>
+                <button onclick="otworzCzat()" class="bg-purple-600 hover:bg-purple-500 text-white font-black px-8 py-4 rounded-xl text-lg shadow-lg transition-all">
+                    KUP ROBUXY / CZAT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const wybraneId = localStorage.getItem('wybrane_id');
+        
+        const defaultItems = [
+            { id: 'default1', title: 'Chroma Deathshard', game: 'MM2', price: '25.00', seller: 'ProGamerRoblox123' },
+            { id: 'default2', title: '1000 Robux (Tax Covered)', game: 'Robuxy', price: '35.00', seller: 'RichTrader99' }
+        ];
+        const customItems = JSON.parse(localStorage.getItem('custom_items')) || [];
+        const allItems = [...customItems, ...defaultItems];
+
+        const znalezionyPrzedmiot = allItems.find(item => item.id === wybraneId);
+
+        if (znalezionyPrzedmiot) {
+            document.getElementById('dynamicTitle').innerText = znalezionyPrzedmiot.title;
+            document.getElementById('dynamicSeller').innerText = znalezionyPrzedmiot.seller;
+            document.getElementById('dynamicPrice').innerText = znalezionyPrzedmiot.price + " PLN";
+            document.getElementById('dynamicImage').innerText = `[ ${znalezionyPrzedmiot.title} ]`;
+            
+            if(wybraneId !== 'default2') {
+                document.getElementById('dynamicDesc').innerText = `Kupujesz: ${znalezionyPrzedmiot.title} od użytkownika ${znalezionyPrzedmiot.seller}. Po dokonaniu zakupu środki zostaną zabezpieczone przez system depozytowy aż do momentu dostarczenia przedmiotu.`;
+            }
+        }
+
+        // FUNKCJA URUCHAMIAJĄCA CZAT
+        function otworzCzat() {
+            if (localStorage.getItem('isLoggedIn') !== 'true') {
+                alert('Musisz się zalogować, aby kupić przedmiot!');
+                window.location.href = 'logowanie.html';
+                return;
+            }
+            
+            // Pobieramy aktualne dane (zmienne domyślne lub z LocalStorage)
+            const tytul = znalezionyPrzedmiot ? znalezionyPrzedmiot.title : '1000 Robux (Tax Covered)';
+            const sprzedawca = znalezionyPrzedmiot ? znalezionyPrzedmiot.seller : 'RichTrader99';
+            
+            localStorage.setItem('chat_item_title', tytul);
+            localStorage.setItem('chat_item_seller', sprzedawca);
+            window.location.href = 'chat.html';
+        }
+    </script>
+</body>
+</html>
